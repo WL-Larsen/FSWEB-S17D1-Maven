@@ -5,6 +5,7 @@ import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,35 +23,43 @@ public class AnimalController {
 
     private Map<Integer, Animal> animals ;
 
-    @GetMapping("/")
-    public List<Animal> getAllAnimals() {
-        return animals.values().stream().collect(Collectors.toList());
+
+
+    @PostConstruct
+    public void loadData() {
+        System.out.println("loading course catalog...");
+        this.animals = new HashMap<>();
+        this.animals.put(1, new Animal(1, "Lion"));
+        this.animals.put(2, new Animal(2, "Crocodile"));
+        System.out.println("fullName=" + fullName + ", courseName=" + courseName);
+    }
+
+    @GetMapping
+    public List<Animal> getAnimals() {
+        System.out.println(this.animals.values());
+        return new ArrayList<>(this.animals.values());
     }
 
     @GetMapping("/{id}")
-    public Animal getAnimalById(@PathVariable int id) {
-        return animals.get(id);
+    public Animal getAnimal(@PathVariable("id") int id) {
+        return this.animals.get(id);
+    }
+    @PostMapping
+    public void addAnimal(@RequestBody Animal animal) {
+        System.out.println("post animal triggered");
+        this.animals.put(animal.getId(), animal);
     }
 
-
     @PutMapping("/{id}")
-    public Animal updateAnimal(@PathVariable int id, @RequestBody Animal updatedAnimal) {
-        if (animals.containsKey(id)) {
-            updatedAnimal.setId(id);
-            animals.put(id, updatedAnimal);
-            return updatedAnimal;
-        } else {
-            return null;
-        }
+    public Animal updateAnimal(@PathVariable("id") int id, @RequestBody Animal newAnimal) {
+        this.animals.replace(id, newAnimal);
+        return this.animals.get(id);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteAnimal(@PathVariable int id) {
-        if (animals.containsKey(id)) {
-            animals.remove(id);
-            return "Animal with ID " + id + " deleted";
-        } else {
-            return "Animal with ID " + id + " not found";
-        }
+    public void deleteAnimal(@PathVariable("id") int id) {
+        System.out.println("delete triggered");
+        this.animals.remove(id);
     }
+
 }
